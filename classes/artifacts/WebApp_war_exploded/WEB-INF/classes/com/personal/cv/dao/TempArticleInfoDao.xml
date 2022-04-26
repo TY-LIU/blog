@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.TempArticleInfoDao">
+
+    <resultMap id="ColumnMap" type="com.personal.cv.entity.ColumnInfo">
+        <id column="column_id" property="column_id"></id>
+        <result column="column_name" property="column_name"></result>
+    </resultMap>
+
+    <resultMap id="TempArticleMap" type="com.personal.cv.entity.TempArticleInfo">
+        <id column="temp_id" property="temp_id"></id>
+        <result column="article_id" property="article_id"></result>
+        <result column="title" property="title"></result>
+        <result column="content" property="content"></result>
+        <result column="describe" property="describe"></result>
+        <result column="title_img" property="title_img"></result>
+        <result column="label" property="label"></result>
+        <result column="commentNum" property="commentNum"></result>
+        <result column="put_time" property="put_time"></result>
+        <result column="update_time" property="update_time"></result>
+        <result column="put_state" property="put_state"></result>
+        <result column="delete_state" property="delete_state"></result>
+        <association property="columnInfo" resultMap="ColumnMap"></association>
+    </resultMap>
+
+    <select id="existData" resultType="java.lang.Integer">
+        select count(*) from tempArticleInfo where article_id=#{id} and delete_state=0
+    </select>
+
+    <select id="get" resultMap="TempArticleMap">
+        select * from tempArticleInfo a left join columnInfo c on a.column_id=c.column_id  where a.article_id=#{pattern}
+    </select>
+
+    <!--效果不理想，容易数据污染-->
+    <insert id="saveOrUpdate">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(*) from tempArticleInfo where article_id=#{article_id} and delete_state=0
+        </selectKey>
+        <if test="count > 0">
+            update tempArticleInfo set
+            title=#{title},content=#{content},describe=#{describe},title_img=#{title_img},column_id=#{column_id},label=#{label},update_time=#{update_time}
+            where article_id=#{article_id}
+        </if>
+        <if test="count==0">
+            insert into
+            tempArticleInfo(article_id,title,content,describe,title_img,column_id,label,put_time,update_time,put_state)
+            values(#{article_id},#{title},#{content},#{describe},#{title_img},#{column_id},#{label},#{put_time},#{update_time},#{put_state})
+        </if>
+    </insert>
+
+    <insert id="save">
+        insert into
+        tempArticleInfo(article_id,title,content,describe,title_img,column_id,label,put_time,update_time,put_state)
+        values(#{article_id},#{title},#{content},#{describe},#{title_img},#{column_id},#{label},#{put_time},#{update_time},#{put_state})
+    </insert>
+    <update id="update">
+        update tempArticleInfo set
+            title=#{title},content=#{content},describe=#{describe},title_img=#{title_img},column_id=#{column_id},label=#{label},update_time=#{update_time}
+            where article_id=#{article_id}
+    </update>
+</mapper>

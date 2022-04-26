@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.MessageInfoDao">
+
+    <resultMap id="UsersMap" type="com.personal.cv.entity.Users">
+        <id column="user_id" property="user_id"></id>
+        <result column="nickname" property="nickname"></result>
+        <result column="portrait" property="portrait"></result>
+    </resultMap>
+
+    <resultMap id="MessageMap" type="com.personal.cv.entity.MessageInfo">
+        <id column="message_id" property="message_id"></id>
+        <result column="message_content" property="message_content"></result>
+        <result column="enjoy" property="enjoy"></result>
+        <result column="message_time" property="s_message_time"></result>
+        <result column="reply_num" property="reply_num"></result>
+        <association property="users" resultMap="UsersMap"></association>
+    </resultMap>
+
+    <insert id="save" parameterType="MessageInfo"  keyProperty="message_id" useGeneratedKeys="true">
+      INSERT INTO messageInfo(user_id,message_content,message_time,message_ip,message_adds,message_os,message_browser,message_url,urlTitle)
+      values (#{user_id},#{message_content},#{message_time},#{message_ip},#{message_adds},#{message_os},#{message_browser},#{message_url},#{urlTitle})
+    </insert>
+
+    <select id="get" resultMap="MessageMap">
+        SELECT m.message_id,m.user_id,m.message_content,m.enjoy,replace(CONVERT(varchar(16),m.message_time,20),'-','.')
+        as message_time,u.nickname,u.portrait FROM messageInfo m left join users u on m.user_id=u.user_id WHERE m.message_id=#{message_id}
+    </select>
+
+    <!--后台展示数据-->
+    <select id="select" resultType="Map" statementType="STATEMENT">
+    select top ${maxSize} * from  (select ROW_NUMBER() over(order by message_time desc)as rownumber,* from
+	(select a.message_id,a.user_id,a.message_content,CONVERT(varchar(100),a.message_time,20) as message_time,a.message_ip,a.message_adds,a.message_os,a.message_browser,a.delete_state,b.reply_num from messageInfo a left join
+	(select m.message_id,COUNT(mr.message_id) as reply_num from messageInfo m
+	left join(select * from m_replyInfo where delete_state=0) as mr on m.message_id=mr.message_id  group by m.message_id)b
+    on a.message_id=b.message_id where a.delete_state=0 )as c) as d where rownumber>${firstResult} and (d.message_content like &apos;${pattern}&apos; or d.message_id like &apos;${pattern}&apos; or d.user_id like &apos;${pattern}&apos; or d.message_time like &apos;${pattern}&apos;)
+    </select>
+
+    <!--前端展示数据-->
+    <select id="selectByIndex" resultType="Map" statementType="STATEMENT">
+        select top ${maxSize} * from (select ROW_NUMBER() over(order by ${sort})as rownumber,* from
+        (select a.message_id,a.user_id,a.message_content,a.enjoy,replace(CONVERT(varchar(16),a.message_time,20),'-','.')
+        as message_time,b.reply_num,u.nickname,u.portrait from messageInfo a left join users u on a.user_id=u.user_id
+        left join
+        (select m.message_id,COUNT(mr.message_id) as reply_num from messageInfo m
+        left join(select * from m_replyInfo where delete_state=0
+        <choose>
+            <when test="author=='false'">
+                ) as mr on m.message_id=mr.message_id group by m.message_id)b
+                on a.message_id=b.message_id where a.delete_state=0)as c) as d where rownumber>${firstResult}
+            </when>
+            <when test="author=='true'">
+                and user_id=6) as mr on m.message_id=mr.message_id group by m.message_id)b
+                on a.message_id=b.message_id where a.delete_state=0)as c) as d where rownumber>${firstResult} and
+                reply_num>0
+            </when>
+        </choose>
+    </select>
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from messageInfo m where m.delete_state=0 and(m.message_content like #{pattern} or m.message_id like #{pattern} or m.user_id like #{pattern} or m.message_time like #{pattern})
+    </select>
+
+    <select id="selectByAuthorCount" resultType="java.lang.Integer">
+        select COUNT(*) from( select m.message_id,COUNT(mr.message_id) as reply_num from messageInfo m
+        left join(select * from m_replyInfo where delete_state=0 and m_replyInfo.user_id=6) as mr on m.message_id=mr.message_id where m.delete_state=0 group by m.message_id)a where a.reply_num>0
+    </select>
+
+    <select id="seeMessage" resultType="Map" statementType="STATEMENT">
+        select m.message_id,m.user_id,m.message_content,m.message_ip,m.message_adds,m.message_os,m.message_browser,m.delete_state,CONVERT(varchar(100),m.message_time,20) as message_time, u.nickname from messageInfo m left join users u on m.user_id=u.user_id where m.delete_state=0 and m.message_id=${id}
+    </select>
+
+    <update id="update">
+        update messageInfo set
+        <choose>
+            <when test="enjoy==0">enjoy-=1 where message_id=#{message_id}</when>
+            <when test="enjoy!=0">enjoy=#{enjoy} where message_id=#{message_id}</when>
+        </choose>
+    </update>
+    <!--删除-->
+    <update id="delete">
+        update messageInfo set delete_state=1
+        <where>
+            message_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+
+    <!--前台用户自己删除-->
+    <update id="delMessage">
+        update messageInfo set delete_state=1 where message_id=#{messageId} and user_id=#{userId}
+    </update>
+
+    <select id="seeReply" resultType="Map" statementType="STATEMENT">
+        select r.*,u1.nickname as user_name,u2.nickname as to_name from m_replyInfo r
+        inner join users u1 on r.user_id=u1.user_id
+        inner join users u2 on r.to_uid=u2.user_id where r.message_id=${id} and r.delete_state=0 order by r.reply_time desc
+    </select>
+
+    <!--查看当前用户的留言-->
+    <select id="selectByUser" resultType="Map" statementType="STATEMENT">
+        select top ${maxSize} * from (select ROW_NUMBER() over(order by message_time DESC)as rownumber,* from
+        (select a.message_id,a.user_id,a.message_content,a.enjoy,replace(CONVERT(varchar(16),a.message_time,20),'-','.')
+        as message_time,a.message_url,a.urlTitle,u.nickname,u.portrait from messageInfo a left join users u on a.user_id=u.user_id
+        where a.delete_state=0 and a.user_id=${userId})as c) as d where rownumber>${firstResult}
+    </select>
+
+    <select id="selectCountByUser" resultType="java.lang.Integer">
+        select count(*) from messageInfo m where m.delete_state=0 and user_id=#{userId}
+    </select>
+
+</mapper>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.M_replyInfoDao">
+
+    <resultMap id="UsersMap" type="com.personal.cv.entity.Users">
+        <id column="user_id" property="user_id"></id>
+        <result column="nickname" property="nickname"></result>
+        <result column="portrait" property="portrait"></result>
+    </resultMap>
+
+    <resultMap id="ToUsersMap" type="com.personal.cv.entity.Users">
+        <id column="to_user_id" property="user_id"></id>
+        <result column="to_nickname" property="nickname"></result>
+        <result column="to_portrait" property="portrait"></result>
+    </resultMap>
+    
+    <resultMap id="M_replyInfoMap" type="com.personal.cv.entity.M_replyInfo">
+        <id column="reply_id" property="reply_id"></id>
+        <result column="message_id" property="message_id"></result>
+        <result column="reply_content" property="reply_content"></result>
+        <result column="enjoy" property="enjoy"></result>
+        <result column="user_id" property="user_id"></result>
+        <result column="to_uid" property="to_uid"></result>
+        <result column="reply_time" property="s_reply_time"></result>
+        <association property="users" resultMap="UsersMap"></association>
+        <association property="to_users" resultMap="ToUsersMap"></association>
+    </resultMap>
+
+
+    <insert id="save" parameterType="M_replyInfo"  keyProperty="reply_id" useGeneratedKeys="true">
+        insert into m_replyInfo(message_id,reply_content,user_id,to_uid,reply_time,reply_ip,reply_os,reply_browser,reply_adds,delete_state)
+        values(#{message_id},#{reply_content},#{user_id},#{to_uid},#{reply_time},#{reply_ip},#{reply_os},#{reply_browser},#{reply_adds},#{delete_state})
+    </insert>
+
+    <select id="get" resultMap="M_replyInfoMap">
+        SELECT mr.reply_id,mr.message_id,mr.reply_content,mr.enjoy,mr.user_id,mr.to_uid,replace(CONVERT(varchar(16),mr.reply_time,20),'-','.') as reply_time,u.user_id,u.nickname,u.portrait,
+        tu.user_id as to_user_id,tu.nickname as to_nickname,tu.portrait as to_portrait
+        from m_replyInfo as mr
+        left join users u on mr.user_id=u.user_id
+        left join users tu on mr.to_uid=tu.user_id
+        WHERE mr.reply_id=#{reply_id}
+    </select>
+
+    <select id="detailReply"  resultType="Map" statementType="STATEMENT">
+        select r.*,u1.nickname as user_name,u2.nickname as to_name from m_replyInfo r
+        inner join users u1 on r.user_id=u1.user_id
+        inner join users u2 on r.to_uid=u2.user_id
+        where r.reply_id=${id} and r.delete_state=0
+    </select>
+
+    <!--查询出每条评论下的回复前四条-->
+    <select id="selectByMessageId" resultMap="M_replyInfoMap">
+        select mr.reply_id,mr.message_id,mr.reply_content,mr.enjoy,mr.user_id,mr.to_uid,replace(CONVERT(varchar(16),mr.reply_time,20),'-','.') as reply_time,u.user_id,u.nickname,u.portrait,
+        tu.user_id as to_user_id,tu.nickname as to_nickname,tu.portrait as to_portrait
+        from (select *, ROW_NUMBER() over(partition by message_id order by reply_time asc)as vn from m_replyInfo  where delete_state=0) mr
+        left join users u on mr.user_id=u.user_id
+        left join users tu on mr.to_uid=tu.user_id
+        <where>
+            mr.vn &lt;= 4 and mr.message_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+            and mr.delete_state=0
+        </where>
+    </select>
+
+    <select id="countByMessage" resultType="java.lang.Integer">
+        select count(*) from m_replyInfo m where m.delete_state=0 and m.message_id=#{id}
+    </select>
+
+    <!--回复分页-->
+    <select id="selectByPage" resultMap="M_replyInfoMap">
+        select top ${maxSize} * from  (select ROW_NUMBER() over(order by reply_time asc)as rownumber,* from
+        (select mr.reply_id,mr.message_id,mr.reply_content,mr.enjoy,mr.to_uid,replace(CONVERT(varchar(16),mr.reply_time,20),'-','.') as reply_time,u.user_id,u.nickname,u.portrait,
+        tu.user_id as to_user_id,tu.nickname as to_nickname,tu.portrait as to_portrait
+        from m_replyInfo mr
+        left join users u on mr.user_id=u.user_id
+        left join users tu on mr.to_uid=tu.user_id where mr.message_id=#{id} and mr.delete_state=0) as tm) as d where rownumber>(#{firstResult}+4)
+    </select>
+
+    <!--删除-->
+    <update id="delete">
+        update m_replyInfo set delete_state=1
+        <where>
+            reply_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+
+    <!--前台用户自己删除-->
+    <update id="delReply">
+        update m_replyInfo set delete_state=1 where reply_id=#{reply_id} and user_id=#{userId}
+    </update>
+
+    <!--前天用户查询别人对自己的回复-->
+    <select id="selectByUser" resultType="Map" statementType="STATEMENT">
+        select top ${maxSize} * from  (select ROW_NUMBER() over(order by reply_time DESC)as rownumber,* from(
+          select mr.reply_id,mr.message_id,m.message_content,m.message_url,m.urlTitle,mr.reply_content,mr.enjoy,mr.to_uid,replace(CONVERT(varchar(16),mr.reply_time,20),'-','.') as reply_time,u.user_id,u.nickname,u.portrait
+          from m_replyInfo mr
+          left join messageInfo m on mr.message_id=m.message_id
+          left join users u on mr.user_id=u.user_id
+          where mr.to_uid=${userId} and mr.delete_state=0) as tm )as d where rownumber>${firstResult}
+    </select>
+
+    <select id="selectCountByUser" resultType="java.lang.Integer">
+        select COUNT(*) from m_replyInfo where to_uid=#{userId} and delete_state=0
+    </select>
+</mapper>

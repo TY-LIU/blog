@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE urlrewrite
+        PUBLIC "-//tuckey.org//DTD UrlRewrite 4.0//EN"
+        "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
+<urlrewrite>
+    <rule>
+        <from>^/cv$</from>
+        <to>/cv.jsp</to>
+    </rule>
+    <rule>
+        <from>^/login$</from>
+        <to>/login.jsp</to>
+    </rule>
+    <rule>
+        <from>^/register$</from>
+        <to>/register.jsp</to>
+    </rule>
+    <rule>
+        <from>^/blog$</from>
+        <to>/blog.jsp</to>
+    </rule>
+    <rule>
+        <from>^/404$</from>
+        <to>/404.jsp</to>
+    </rule>
+    <rule>
+        <from>^/plug$</from>
+        <to>/plug.jsp</to>
+    </rule>
+    <rule>
+        <from>^/logout$</from>
+        <to>/logout.jsp</to>
+    </rule>
+    <rule>
+        <from>^/qq_connect$</from>
+        <to>/users/qqConnect</to>
+    </rule>
+
+    <rule>
+        <from>^/articleInfo/updateArticle/([0-9]+)$</from>
+        <to>/articleInfo/update-article.do?article_id=$1</to>
+    </rule>
+    <rule>
+        <from>^/articleInfo/loadTempArticle/([0-9]+)$</from>
+        <to>/articleInfo/loadTempArticle.do?article_id=$1</to>
+    </rule>
+    <rule>
+        <from>^/columnInfo/updateCategory/([0-9]+)$</from>
+        <to>/columnInfo/update-category.do?column_id=$1</to>
+    </rule>
+
+    <!--通用规则,一定要写在最后-->
+    <rule>
+        <from>^/([_a-zA-Z]+[_0-9a-zA-Z-/]*[_0-9a-zA-Z]+)/?$</from>
+        <to>/$1.do</to>
+    </rule>
+</urlrewrite>

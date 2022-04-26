@@ -1,0 +1,273 @@
+span, a {
+    font-size: calc(12rem / 14);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background: url("../img/whitebg.jpg") repeat;
+    font-family: "Microsoft Yahei";
+    color: #787978;
+}
+
+html, body {
+    font-size: 14px;
+}
+
+a {
+    color: #948C76;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #948C76;
+    text-decoration: underline
+}
+
+p {
+    margin-bottom: 0;
+    text-align: justify;
+}
+
+li {
+    list-style: none;
+}
+
+.content {
+    padding: 4.29rem 0;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.container {
+    max-width: 1000px !important;
+    position: relative;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.header-box {
+    height: auto;
+    transform: translateY(-2.14rem);
+    opacity: 0;
+    width: 100%;
+}
+
+.header-box img {
+    width: 8.57rem;
+    height: 8.57rem;
+    border-radius: 50%;
+}
+
+.header-box, p.myId {
+    margin-bottom: 2.86rem;
+    text-align: center;
+}
+
+.center {
+    text-align: center;
+}
+
+.myId {
+    font-size: 1.6rem;
+    font-weight: 400;
+    padding: 0 0.71rem;
+    color: #948C76;
+    letter-spacing: 0.1em;
+    background: #F7F3EE;
+    display: inline-block;
+    margin-top: 0;
+    height: 2.71rem;
+    line-height: 2.71rem;
+    transform: translateY(2.14rem);
+    opacity: 0;
+}
+
+.fadeIn {
+    transform: translateY(0);
+    opacity: 1;
+    transition: all 1s linear;
+}
+
+.sort {
+    margin: 0 0 5.71rem;
+}
+
+.sort a {
+    margin: 0 0.71rem;
+}
+
+.timeAxis {
+    padding-left: 15%;
+}
+
+.axis-content {
+    width: 100%;
+    position: relative;
+    min-height: 14.29rem;
+}
+
+.dots {
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 0.143rem solid #F1F0EE;
+    position: absolute;
+    top: 0;
+    font-size: 0;
+    line-height: 0;
+    border-radius: 50%;
+    background: #fdfdfd;
+    margin-left: -0.55rem;
+    z-index: 10;
+    transition: 0.2s;
+}
+
+.dots:hover {
+    border: 0.61rem solid silver;
+    transform: scale(1.1);
+}
+
+.clock {
+    display: block;
+    position: absolute;
+    top: -0.71rem;
+    margin-left: 2.86rem;
+    height: 2.14rem;
+    color: #948C76;
+    z-index: 10;
+    transition: 0.3s;
+}
+
+.clock span.triangle {
+    position: absolute;
+    left: -1.14rem;
+    top: 0;
+    border-right: 1.21rem solid #F7F3EE;
+    border-top: 1.07rem dashed transparent;
+    border-bottom: 1.07rem dashed transparent;
+    width: 0;
+    height: 0;
+    font-size: 0;
+    line-height: 0;
+}
+
+.clock .data {
+    display: inline-block;
+    padding: 0 1rem 0 1.42rem;
+    height: 2.14rem;
+    background: #F7F3EE;
+    font-size: 0.86rem;
+    vertical-align: top;
+    line-height: 2.14rem;
+}
+
+.clock, .axis-content .timeLine, .dots {
+    left: 1%;
+}
+
+.axis-content .axis-container {
+    width: 100%;
+    padding: 0 0 0 1%;
+    position: relative;
+}
+
+.axis-container .timeLine {
+    height: 100%;
+    width: 0.143rem;
+    background: #F1F0EE;
+    position: absolute;
+    z-index: 0;
+    transition: 0.5s;
+}
+
+.blog-content {
+    padding: 2.86rem 0 5.72rem 2.86rem;
+    overflow: hidden;
+}
+
+.blog-title {
+    margin-bottom: 20px;
+}
+
+.blog-content a {
+    color: #444;
+    font-size: 1rem;
+}
+
+.blog-img {
+    padding: 0;
+}
+
+.blog-img > img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.timeAxis img {
+    padding-right: 1em;
+    margin-bottom: 1em;
+}
+
+.blog-detail {
+    font-size: 12px;
+    padding-top: 0.5em;
+}
+
+.clock:hover {
+    transform: translateX(-0.86rem);
+}
+
+.clock:hover span.triangle {
+    border-right-color: #e7d9ba;
+}
+
+.clock:hover span.data {
+    background-color: #e7d9ba;
+}
+
+.top {
+    position: fixed;
+    right: 20px;
+    bottom: 0;
+    background: #cccccc;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    line-height: 40px;
+    border-radius: 4px;
+    opacity: 0.6;
+    cursor: pointer;
+    z-index: 999;
+}
+
+.top:hover {
+    background: gray;
+}
+
+.top.fade {
+    bottom: 0;
+    opacity: 0;
+    transition: all 0.3s 0s;
+}
+
+.top.fade.fadeIn {
+    bottom: 10%;
+    opacity: 1;
+    transition: all 0.3s 0s;
+}
+.record {
+    font-size: 12px;
+}

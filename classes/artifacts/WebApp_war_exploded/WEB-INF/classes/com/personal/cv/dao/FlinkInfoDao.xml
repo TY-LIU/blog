@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.FlinkInfoDao">
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from flinkInfo a where (a.flink_name like #{pattern} or a.flink_url like #{pattern} or a.describe like #{pattern} or a.put_time like #{pattern}) and a.delete_state=0
+    </select>
+
+    <select id="get" resultType="FlinkInfo">
+        select * from flinkInfo where flink_id=#{pattern} and delete_state=0
+    </select>
+
+    <select id="select" resultType="FlinkInfo">
+        select top ${maxSize} * from (select ROW_NUMBER() over(order by put_time desc)as rownumber,* from flinkInfo where delete_state=0)
+        as a where rownumber>#{firstResult} and (a.flink_name like #{pattern} or a.flink_url like #{pattern} or a.describe like #{pattern} or a.put_time like #{pattern})
+    </select>
+
+    <update id="update">
+        update flinkInfo set flink_name=#{flink_name},flink_icon=#{flink_icon},flink_url=#{flink_url},describe=#{describe} where flink_id=#{flink_id}
+    </update>
+
+    <insert id="save">
+        insert into flinkInfo(flink_name,flink_icon,flink_url,describe,put_time)
+        values(#{flink_name},#{flink_icon},#{flink_url},#{describe},#{put_time})
+    </insert>
+
+    <!--删除-->
+    <update id="delete">
+        update flinkInfo set delete_state=1
+        <where>
+            flink_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+
+</mapper>

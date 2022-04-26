@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.User_authsDao">
+
+    <insert id="save">
+        insert into user_auths(role,user_id,qq_id,access_token,qq_number,identifier,credential)
+        values(#{role},#{user_id},#{qq_id},#{access_token},#{qq_number},#{identifier},#{credential})
+    </insert>
+
+    <!--登录-->
+    <select id="selectByIdentifier" resultType="com.personal.cv.entity.User_auths">
+        select * from user_auths where identifier=#{identifier} and credential=#{credential} and role=#{role}
+    </select>
+
+    <select id="existIdentifier" resultType="java.lang.Integer">
+        select COUNT(*) from user_auths where identifier=#{identifier}
+    </select>
+
+    <select id="existQQid" resultType="java.lang.Integer">
+        select count(*) from user_auths where qq_id=#{identifier}
+    </select>
+</mapper>

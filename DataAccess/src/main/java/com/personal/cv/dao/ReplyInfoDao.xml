@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.ReplyInfoDao">
+
+    <insert id="save">
+        insert into replyInfo(comment_id,reply_content,user_id,to_uid,reply_time,reply_ip,reply_os,reply_browser,reply_adds,delete_state)
+                      values(#{comment_id},#{reply_content},#{user_id},#{to_uid},#{reply_time},#{reply_ip},#{reply_os},#{reply_browser},#{reply_adds},#{delete_state})
+    </insert>
+
+    <select id="detailReply"  resultType="Map" statementType="STATEMENT">
+        select r.*,u1.nickname as user_name,u2.nickname as to_name from replyInfo r inner join users u1 on r.user_id=u1.user_id inner join users u2 on r.to_uid=u2.user_id where r.reply_id=${id} and r.delete_state=0
+    </select>
+    <!--删除-->
+    <update id="delete">
+        update replyInfo set delete_state=1
+        <where>
+            reply_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+</mapper>

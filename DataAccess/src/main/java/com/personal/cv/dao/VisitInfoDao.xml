@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.VisitInfoDao">
+
+    <update id="updateVisitClickDate">
+        update visitInfo set visit_num= #{visit_num} + ISNULL(visit_num,0) where Visit_date=CONVERT(varchar,GETDATE(),23)
+    </update>
+
+    <update id="updateYetVisitClickDate">
+        update visitInfo set visit_num= #{visit_num} + ISNULL(visit_num,0) where Visit_date=CONVERT(varchar,dateadd(DD,-1,getdate()),23)
+    </update>
+
+    <insert id="insertVisitClickDate">
+        insert into visitInfo(visit_num,visit_date) values(0,CONVERT(varchar,GETDATE(),23))
+    </insert>
+
+    <!--返回一个无实体数据，用List<HashMap<String, Object>>获取-->
+    <select id="statistics" resultType="Map" statementType="STATEMENT">
+        select * from
+            (select SUM(Visit_num) as visit_nun from visitInfo)a,
+            (select COUNT(*) as comment_num from commentInfo where delete_state=0)b,
+            (select COUNT(*) as article_num from articleInfo where delete_state=0)c,
+            (select COUNT(*) as flink_num from flinkInfo where delete_state=0)d
+    </select>
+
+</mapper>

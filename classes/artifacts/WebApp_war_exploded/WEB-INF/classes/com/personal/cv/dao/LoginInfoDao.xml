@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.LoginInfoDao">
+
+    <insert id="save">
+        insert into loginInfo(user_id,login_ip,login_time,login_area,login_browser,login_os,state,delete_state)
+                    values(#{user_id},#{login_ip},#{login_time},#{login_area},#{login_browser},#{login_os},#{state},#{delete_state})
+    </insert>
+
+    <update id="delete">
+        update loginInfo set delete_state=1
+        <where>
+            login_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="deleteByCurrent">
+        update loginInfo set delete_state=1 where user_id = #{id};
+    </update>
+
+    <update id="deleteAll">
+        update loginInfo set delete_state=1 where delete_state=0
+    </update>
+
+    <select id="loginState" resultType="Map" statementType="STATEMENT">
+        select * from (select COUNT(*) as login_num from loginInfo) a cross apply
+        (select top 2 * from loginInfo order by login_time desc)c cross apply
+        (select * from sysInfo)d
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select COUNT(*) from loginInfo l
+        left join users u on l.user_id=u.user_id where l.delete_state=0 and u.delete_state=0
+        and (l.login_id like #{pattern} or u.nickname like #{pattern} or l.login_time like #{pattern} or l.login_ip like #{pattern});
+    </select>
+
+    <select id="select" resultType="Map" statementType="STATEMENT">
+        select top ${maxSize} * from (select ROW_NUMBER() over(order by ${Sort})as rownumber,* from
+        (select l.login_id,u.nickname,CONVERT(varchar(100),l.login_time,20) as login_time,l.login_ip,l.login_area,l.login_browser,l.login_os,l.state from loginInfo l
+        left join users u on l.user_id=u.user_id where l.delete_state=0 and u.delete_state=0) as a) as b  where rownumber>${firstResult}
+        and (b.login_id like &apos;${pattern}&apos; or b.nickname like &apos;${pattern}&apos; or b.login_time like &apos;${pattern}&apos; or b.login_ip like &apos;${pattern}&apos;);
+    </select>
+
+</mapper>

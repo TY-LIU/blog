@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.UsersDao">
+
+    <resultMap id="UsersMap" type="com.personal.cv.entity.Users">
+        <id column="user_id" property="user_id"></id>
+        <result column="nickname" property="nickname"></result>
+        <result column="portrait" property="portrait"></result>
+    </resultMap>
+
+    <resultMap id="UsersHashMap" type="java.util.HashMap">
+        <id column="user_id" property="user_id"></id>
+        <result column="nickname" property="nickname"></result>
+        <result column="portrait" property="portrait"></result>
+        <result column="autograph" property="autograph"></result>
+    </resultMap>
+
+    <insert id="register" parameterType="Users" keyProperty="user_id" useGeneratedKeys="true">
+        insert into
+        <choose>
+            <when test="portrait==null">
+                users(nickname,register_time) values(#{nickname},#{register_time})
+            </when>
+            <when test="portrait!=null">
+                users(nickname,portrait,register_time) values(#{nickname},#{portrait},#{register_time})
+            </when>
+        </choose>
+    </insert>
+
+    <update id="delete">
+        update users set delete_state=1
+        <where>
+            user_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </update>
+
+    <update id="enable">
+        update users set enable=1 where user_id = #{id}
+    </update>
+
+    <update id="disEnable">
+        update users set enable=0 where user_id = #{id}
+    </update>
+
+    <update id="updateUser">
+        update users set nickname=#{users.nickname},portrait=#{users.portrait},autograph=#{users.autograph} where user_id=#{users.user_id};
+        update user_auths set qq_id=#{user_auths.qq_id},access_token=#{user_auths.access_token},qq_number=#{user_auths.qq_number},identifier=#{user_auths.identifier} where auths_id=#{user_auths.auths_id};
+    </update>
+
+    <select id="get" resultType="Users">
+        select * from users where user_id=#{id} and delete_state=0
+    </select>
+
+    <!--前台查看-->
+    <select id="getByUser" resultMap="UsersHashMap">
+        select user_id,nickname,portrait,autograph from users where user_id=#{id} and delete_state=0
+    </select>
+
+    <select id="seeUser" resultType="Map" statementType="STATEMENT">
+        select u.user_id,u.nickname,u.portrait,u.autograph,CONVERT(varchar(100),u.register_time,20) as register_time,u.enable,ua.auths_id,ua.qq_id,ua.access_token,ua.qq_number,ua.identifier  from users u left join user_auths ua on u.user_id=ua.user_id where ua.role=1 and u.user_id=${id} and u.delete_state=0
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select COUNT(*) from users u
+        left join user_auths ua on u.user_id=ua.user_id where ua.role=1
+        and (u.user_id like #{pattern} or u.nickname like #{pattern} or ua.qq_number like #{pattern} or ua.identifier like #{pattern});
+    </select>
+
+    <select id="select" resultType="Map" statementType="STATEMENT">
+      select top ${maxSize} * from (select ROW_NUMBER() over(order by ${Sort})as rownumber,* from
+        (select u.user_id,u.nickname,u.portrait,u.autograph,CONVERT(varchar(100),u.register_time,20) as register_time,u.enable,ua.auths_id,ua.role,ua.qq_id,ua.access_token,ua.qq_number,ua.identifier from users u
+        left join user_auths ua on u.user_id=ua.user_id where ua.role=1 and u.delete_state=0) as a) as b where rownumber>${firstResult}
+        and (b.user_id like &apos;${pattern}&apos; or b.nickname like &apos;${pattern}&apos; or b.qq_number like &apos;${pattern}&apos; or b.identifier like &apos;${pattern}&apos;);
+    </select>
+
+    <select id="selectByNickName" resultType="java.lang.Integer">
+      select count(*) from users where nickname=#{nickname}
+    </select>
+
+    <select id="selectByQQid" resultMap="UsersMap">
+        select u.user_id,u.nickname,u.portrait from user_auths as ua inner join users u on ua.user_id=u.user_id where ua.qq_id=#{qq_id} and u.delete_state=0 and u.enable=1
+    </select>
+
+    <!--用户修改个人信息-->
+    <update id="editByUser">
+        update users set
+        <choose>
+            <when test="portrait!=''">
+                portrait=#{portrait} where user_id=#{user_id}
+            </when>
+            <when test="nickname!=''">
+                nickname=#{nickname} where user_id=#{user_id}
+            </when>
+            <when test="autograph!=''">
+                autograph=#{autograph} where user_id=#{user_id}
+            </when>
+        </choose>
+    </update>
+</mapper>

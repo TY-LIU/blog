@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.EnjoyInfoDao">
+
+    <!--返回一个无实体数据，用List<HashMap<String, Object>>获取-->
+    <select id="selectAll" resultType="Map" statementType="STATEMENT">
+        select * from enjoyInfo
+    </select>
+
+    <insert id="save">
+        insert into enjoyInfo(enjoyKey,ip) values(#{enjoyKey},#{ip});
+    </insert>
+
+    <delete id="delete">
+        delete enjoyInfo where enjoyKey=#{enjoyKey} and ip=#{ip}
+    </delete>
+
+    <select id="selectKey" resultType="java.lang.Integer">
+        select COUNT(*) from enjoyInfo where enjoyKey=#{enjoyKey} and ip=#{ip}
+    </select>
+
+    <insert id="saveMap" >
+        <foreach collection="params.keys" index="index" item="item">
+            <foreach collection="params[item]" item="value">
+                <if test="null != value">
+                    if not exists (select 1 from enjoyInfo where  enjoyKey = &apos;${item}&apos;  and  ip=&apos;${value}&apos;)
+                    insert enjoyInfo(enjoyKey,ip) values(&apos;${item}&apos;,&apos;${value}&apos;)
+                </if>
+            </foreach>
+        </foreach>
+    </insert>
+</mapper>

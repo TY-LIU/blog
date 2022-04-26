@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.personal.cv.dao.ColumnInfoDao">
+
+
+    <insert id="save">
+      insert into columnInfo(column_name,alias,set_time,delete_state) values(#{column_name},#{alias},#{set_time},#{delete_state});
+    </insert>
+
+    <!--删除栏目(逻辑删除)-->
+    <update id="delete">
+        update columnInfo set delete_state=1
+        <where>
+            column_id in
+            <foreach collection="ids" item="column_id" open="(" close=")" separator=",">#{column_id}</foreach>
+        </where>
+    </update>
+
+    <update id="update">
+        update columnInfo set column_name=#{column_name},alias=#{alias} where column_id=#{column_id}
+    </update>
+    <select id="selectAll" resultType="com.personal.cv.entity.ColumnInfo">
+      select e.column_id,e.column_name,e.alias,d.articleNum,e.set_time,e.delete_state from
+      (select c.column_id as column_id, COUNT(a.column_id) as articleNum from columnInfo c
+        left join articleInfo a on c.column_id=a.column_id
+        where c.delete_state=0 or a.delete_state=0
+        group by c.column_id)d
+          inner join columnInfo e on d.column_id=e.column_id
+          order by e.column_id desc
+    </select>
+
+    <select id="get" resultType="com.personal.cv.entity.ColumnInfo">
+        select * from columnInfo where column_id=#{id}
+    </select>
+
+</mapper>
+
+
+
+
+
